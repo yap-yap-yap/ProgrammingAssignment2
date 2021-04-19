@@ -6,16 +6,16 @@ import java.security.*;
 import java.util.Base64;
 
 public class RSAKeyUtils {
-    public static String encrypt_string(String string, Key key) throws Exception{
+    public static byte[] encrypt_string(String string, Key key) throws Exception{
         Cipher encryptCipher = getCipher(Cipher.ENCRYPT_MODE, key);
         byte[] encryptBytes = encryptCipher.doFinal(string.getBytes());
-        return Base64.getEncoder().encodeToString(encryptBytes);
+        return encryptBytes;
 
     }
 
-    public static String decrypt_string(String string, Key key) throws Exception{
+    public static String decrypt_string(byte[] bytes, Key key) throws Exception{
         Cipher decryptCipher = getCipher(Cipher.DECRYPT_MODE, key);
-        byte[] decryptBytes = decryptCipher.doFinal(string.getBytes());
+        byte[] decryptBytes = decryptCipher.doFinal(bytes);
         return Base64.getEncoder().encodeToString(decryptBytes);
 
     }
