@@ -75,6 +75,10 @@ public class ServerWithAuthProtocol {
 				if (packetType == 0) {
 
 					System.out.println("Receiving file...");
+					File output_dir = new File("received-files");
+					if(!output_dir.exists()){
+						output_dir.mkdir();
+					}
 
 					int numBytes = fromClient.readInt();
 					byte [] filename = new byte[numBytes];
