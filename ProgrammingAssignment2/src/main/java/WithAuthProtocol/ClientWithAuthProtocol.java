@@ -27,7 +27,7 @@ public class ClientWithAuthProtocol {
 		//System.out.println("CA public key: " + CAPublicKey);
 		//System.out.println();
 
-		String authMessage = "authmessage";
+		//String authMessage = "authmessage";
 
     	int port = 4321;
     	if (args.length > 2) port = Integer.parseInt(args[2]);
@@ -54,6 +54,7 @@ public class ClientWithAuthProtocol {
 			fromServer = new DataInputStream(clientSocket.getInputStream());
 
 			System.out.println("Client: Requesting signed message for authentication...");
+			String authMessage = NonceGenerator.get(8);
 			toServer.writeInt(2);
 			toServer.writeUTF(authMessage);
 			byte[] signedAuthMessage = new byte[128];
