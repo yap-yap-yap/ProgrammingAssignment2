@@ -65,6 +65,9 @@ public class ServerWithAuthProtocol {
 				}
 
 				if (packetType == 4){
+					System.out.println("Closing connection...");
+					fromClient.close();
+					toClient.close();
 					connectionSocket.close();
 				}
 
@@ -79,7 +82,7 @@ public class ServerWithAuthProtocol {
 					// See: https://stackoverflow.com/questions/25897627/datainputstream-read-vs-datainputstream-readfully
 					fromClient.readFully(filename, 0, numBytes);
 
-					fileOutputStream = new FileOutputStream("recv_"+new String(filename, 0, numBytes));
+					fileOutputStream = new FileOutputStream("received-files/recv_"+new String(filename, 0, numBytes));
 					bufferedFileOutputStream = new BufferedOutputStream(fileOutputStream);
 
 				// If the packet is for transferring a chunk of the file
@@ -93,13 +96,13 @@ public class ServerWithAuthProtocol {
 						bufferedFileOutputStream.write(block, 0, numBytes);
 
 					if (numBytes < 117) {
-						System.out.println("Closing connection...");
+						System.out.println("File transmission complete.");
 
 						if (bufferedFileOutputStream != null) bufferedFileOutputStream.close();
 						if (bufferedFileOutputStream != null) fileOutputStream.close();
-						fromClient.close();
-						toClient.close();
-						connectionSocket.close();
+//						fromClient.close();
+//						toClient.close();
+//						connectionSocket.close();
 					}
 				}
 

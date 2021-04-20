@@ -9,16 +9,17 @@ import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
+import java.util.Scanner;
 
 public class ClientWithAuthProtocol {
 
 	public static void main(String[] args) throws Exception {
 
-    	String filename = "100.txt";
-    	if (args.length > 0) filename = args[0];
+    	//String filename = "100.txt";
+    	//if (args.length > 0) filename = args[0];
 
     	String serverAddress = "localhost";
-    	if (args.length > 1) filename = args[1];
+    	//if (args.length > 1) filename = args[1];
 
 		X509Certificate CACertificate = CertificateReader.getInstance("security-files/cacsertificate.crt");
 		//System.out.println("CA cert: " + CACertificate);
@@ -26,8 +27,6 @@ public class ClientWithAuthProtocol {
 		PublicKey CAPublicKey = CACertificate.getPublicKey();
 		//System.out.println("CA public key: " + CAPublicKey);
 		//System.out.println();
-
-		//String authMessage = "authmessage";
 
     	int port = 4321;
     	if (args.length > 2) port = Integer.parseInt(args[2]);
@@ -93,35 +92,60 @@ public class ClientWithAuthProtocol {
 				return;
 			}
 
+			System.out.println("Connection authenticated.");
+			Scanner scanner = new Scanner(System.in);
+			String input_filename = "";
 
+			while(!input_filename.equals("exit()")){
+				try{
+					System.out.println("Enter filename of desired file to send. Enter exit() to close connection.");
+					input_filename = scanner.nextLine();
+					String input_file_path = "input-files/" + input_filename;
+					if(input_filename.equals("exit()")){
+						continue;
+					}
+					if(!new File(input_file_path).exists()){
+						System.out.println("File must be in directory ./input-files/.");
+						continue;
+					}
+					System.out.println("Sending file...");
 
-			System.out.println("Sending file...");
+					// Send the filename
+					toServer.writeInt(0);
+					toServer.writeInt(input_filename.getBytes().length);
+					toServer.write(input_filename.getBytes());
+					//toServer.flush();
 
-			// Send the filename
-			toServer.writeInt(0);
-			toServer.writeInt(filename.getBytes().length);
-			toServer.write(filename.getBytes());
-			//toServer.flush();
+					// Open the file
+					//System.out.println("input-files/" + input_filename);
+					fileInputStream = new FileInputStream("input-files/" + input_filename);
+					bufferedFileInputStream = new BufferedInputStream(fileInputStream);
 
-			// Open the file
-			fileInputStream = new FileInputStream(filename);
-			bufferedFileInputStream = new BufferedInputStream(fileInputStream);
+					byte [] fromFileBuffer = new byte[117];
 
-	        byte [] fromFileBuffer = new byte[117];
+					// Send the file
+					for (boolean fileEnded = false; !fileEnded;) {
+						numBytes = bufferedFileInputStream.read(fromFileBuffer);
+						fileEnded = numBytes < 117;
 
-	        // Send the file
-	        for (boolean fileEnded = false; !fileEnded;) {
-				numBytes = bufferedFileInputStream.read(fromFileBuffer);
-				fileEnded = numBytes < 117;
+						toServer.writeInt(1);
+						toServer.writeInt(numBytes);
+						toServer.write(fromFileBuffer);
+						toServer.flush();
+					}
+					bufferedFileInputStream.close();
+					fileInputStream.close();
 
-				toServer.writeInt(1);
-				toServer.writeInt(numBytes);
-				toServer.write(fromFileBuffer);
-				toServer.flush();
+				}catch(Exception e){
+					e.printStackTrace();
+					continue;
+				}
 			}
 
-	        bufferedFileInputStream.close();
-	        fileInputStream.close();
+
+
+			toServer.writeInt(4);
+			clientSocket.close();
 
 			System.out.println("Closing connection...");
 
