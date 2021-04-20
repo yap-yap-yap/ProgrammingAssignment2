@@ -118,7 +118,7 @@ public class ClientWithAuthProtocol {
 
 					// Open the file
 					//System.out.println("input-files/" + input_filename);
-					fileInputStream = new FileInputStream("input-files/" + input_filename);
+					fileInputStream = new FileInputStream(input_file_path);
 					bufferedFileInputStream = new BufferedInputStream(fileInputStream);
 
 					byte [] fromFileBuffer = new byte[117];
