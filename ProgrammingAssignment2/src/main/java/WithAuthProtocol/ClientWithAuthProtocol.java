@@ -142,7 +142,7 @@ public class ClientWithAuthProtocol {
 				}
 			}
 
-
+			scanner.close();
 
 			toServer.writeInt(4);
 			clientSocket.close();
