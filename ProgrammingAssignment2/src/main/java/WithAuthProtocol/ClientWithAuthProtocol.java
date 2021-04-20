@@ -55,11 +55,13 @@ public class ClientWithAuthProtocol {
 
 			System.out.println("Client: Requesting signed message for authentication...");
 			String authMessage = NonceGenerator.get(8);
+			//System.out.println("original nonce: " + authMessage);
 			toServer.writeInt(2);
 			toServer.writeUTF(authMessage);
-			byte[] signedAuthMessage = new byte[128];
-			fromServer.readFully(signedAuthMessage);
-			//System.out.println(signedAuthMessage);
+			int signedAuthMessageLength = fromServer.readInt();
+			byte[] signedAuthMessage = new byte[signedAuthMessageLength];
+			fromServer.readFully(signedAuthMessage, 0, signedAuthMessageLength);
+			//System.out.println("encrypted nonce: " + signedAuthMessage);
 
 			System.out.println("Client: Requesting server certificate...");
 			toServer.writeInt(3);
@@ -72,6 +74,7 @@ public class ClientWithAuthProtocol {
 				serverCertificate.verify(CAPublicKey);
 			}catch(Exception e){
 				e.printStackTrace();
+				System.out.println("Server cannot be trusted. Closing connection...");
 				toServer.writeInt(4);
 				clientSocket.close();
 				return;
@@ -81,13 +84,13 @@ public class ClientWithAuthProtocol {
 			//System.out.println(signedAuthMessage);
 			PublicKey serverPublicKey = serverCertificate.getPublicKey();
 			byte[] decryptAuthMessage = RSAKeyUtils.decrypt_bytes(signedAuthMessage, serverPublicKey);
-			System.out.println("decrypted message: " + decryptAuthMessage);
-			System.out.println("original message: " + authMessage.getBytes());
-			if(decryptAuthMessage != authMessage.getBytes()){
-				System.out.println("fuck you");
-				//toServer.writeInt(4);
-				//clientSocket.close();
-
+			//System.out.println("decrypted message: " + new String(decryptAuthMessage));
+			//System.out.println("original message: " + authMessage);
+			if(!authMessage.equals(new String(decryptAuthMessage))){
+				System.out.println("Server cannot be trusted. Closing connection...");
+				toServer.writeInt(4);
+				clientSocket.close();
+				return;
 			}
 
 
@@ -127,4 +130,6 @@ public class ClientWithAuthProtocol {
 		long timeTaken = System.nanoTime() - timeStarted;
 		System.out.println("Program took: " + timeTaken/1000000.0 + "ms to run");
 	}
+
+
 }

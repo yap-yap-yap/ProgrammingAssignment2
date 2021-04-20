@@ -51,8 +51,10 @@ public class ServerWithAuthProtocol {
 					System.out.println("Server: Sending signed message to client...");
 
 					String authMessage = fromClient.readUTF();
+					//System.out.println("original nonce: " + authMessage);
 					byte[] encryptAuthMessage = RSAKeyUtils.encrypt_bytes(authMessage.getBytes(), privateKey);
-					//System.out.println(encryptAuthMessage);
+					//System.out.println("encrypted nonce: " + encryptAuthMessage);
+					toClient.writeInt(encryptAuthMessage.length); //so that client can generate a byte array of suitable length
 					toClient.write(encryptAuthMessage);
 				}
 
