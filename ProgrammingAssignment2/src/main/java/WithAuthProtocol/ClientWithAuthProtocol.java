@@ -112,9 +112,16 @@ public class ClientWithAuthProtocol {
 
 					// Send the filename
 					toServer.writeInt(0);
-					toServer.writeInt(input_filename.getBytes().length);
-					toServer.write(input_filename.getBytes());
-					//toServer.flush();
+					//System.out.println(input_filename);
+					byte[] filename_bytes = input_filename.getBytes();
+
+//					System.out.println(filename_bytes);
+//					System.out.println(filename_bytes.length);
+					toServer.writeInt(filename_bytes.length);
+					//Thread.sleep(1000);
+
+					toServer.write(filename_bytes);
+					toServer.flush();
 
 					// Open the file
 					//System.out.println("input-files/" + input_filename);
@@ -122,19 +129,28 @@ public class ClientWithAuthProtocol {
 					bufferedFileInputStream = new BufferedInputStream(fileInputStream);
 
 					byte [] fromFileBuffer = new byte[117];
-
+					int total_bytes = 0;
+					int times_written = 0;
 					// Send the file
 					for (boolean fileEnded = false; !fileEnded;) {
 						numBytes = bufferedFileInputStream.read(fromFileBuffer);
 						fileEnded = numBytes < 117;
+						//System.out.println("fileEnded: " + fileEnded);
+						total_bytes += numBytes;
+						times_written++;
 
 						toServer.writeInt(1);
 						toServer.writeInt(numBytes);
 						toServer.write(fromFileBuffer);
 						toServer.flush();
 					}
+					//System.out.println(total_bytes);
+					//System.out.println(times_written);
+
 					bufferedFileInputStream.close();
 					fileInputStream.close();
+					System.out.println("File sent.\n");
+
 
 				}catch(Exception e){
 					e.printStackTrace();

@@ -36,15 +36,23 @@ public class ServerWithAuthProtocol {
 		FileOutputStream fileOutputStream = null;
 		BufferedOutputStream bufferedFileOutputStream = null;
 
+		File output_dir = new File("received-files");
+		if(!output_dir.exists()){
+			output_dir.mkdir();
+		}
+
 		try {
 			welcomeSocket = new ServerSocket(port);
 			connectionSocket = welcomeSocket.accept();
 			fromClient = new DataInputStream(connectionSocket.getInputStream());
 			toClient = new DataOutputStream(connectionSocket.getOutputStream());
+			int times_read = 0;
+
 
 			while (!connectionSocket.isClosed()) {
 
 				int packetType = fromClient.readInt();
+
 
 				// If the packet is sending a authentication message to be signed
 				if (packetType == 2){
@@ -75,35 +83,57 @@ public class ServerWithAuthProtocol {
 				if (packetType == 0) {
 
 					System.out.println("Receiving file...");
-					File output_dir = new File("received-files");
-					if(!output_dir.exists()){
-						output_dir.mkdir();
-					}
 
 					int numBytes = fromClient.readInt();
+					//System.out.println("this is the size of the filename: " + numBytes);
 					byte [] filename = new byte[numBytes];
 					// Must use read fully!
 					// See: https://stackoverflow.com/questions/25897627/datainputstream-read-vs-datainputstream-readfully
 					fromClient.readFully(filename, 0, numBytes);
 
+					System.out.println("Saving to: " + "received-files/recv_"+new String(filename, 0, numBytes));
 					fileOutputStream = new FileOutputStream("received-files/recv_"+new String(filename, 0, numBytes));
 					bufferedFileOutputStream = new BufferedOutputStream(fileOutputStream);
 
-				// If the packet is for transferring a chunk of the file
-				} else if (packetType == 1) {
+				}
 
+				// If the packet is for transferring a chunk of the file
+				if (packetType == 1) {
+					//System.out.println("receiving block");
 					int numBytes = fromClient.readInt();
 					byte [] block = new byte[numBytes];
 					fromClient.readFully(block, 0, numBytes);
 
-					if (numBytes > 0)
+					if (numBytes > 0) {
+						times_read++;
 						bufferedFileOutputStream.write(block, 0, numBytes);
+					}
 
 					if (numBytes < 117) {
 						System.out.println("File transmission complete.");
+						//System.out.println("times read: "+times_read);
+						times_read = 0;
 
-						if (bufferedFileOutputStream != null) bufferedFileOutputStream.close();
-						if (bufferedFileOutputStream != null) fileOutputStream.close();
+						// there is trailing data for some reason. this clears the trailing data in the socket so it doesn't interfere with the next packet that the client sends.
+						try{
+							byte[] remaining_data = new byte[128];
+							fromClient.read(remaining_data);
+							//System.out.println(remaining_data);
+						}catch(Exception e){
+							e.printStackTrace();
+							continue;
+						}
+
+						if (bufferedFileOutputStream != null) {
+							bufferedFileOutputStream.close();
+						}
+						if (bufferedFileOutputStream != null) {
+							fileOutputStream.close();
+						}
+
+
+
+
 //						fromClient.close();
 //						toClient.close();
 //						connectionSocket.close();
