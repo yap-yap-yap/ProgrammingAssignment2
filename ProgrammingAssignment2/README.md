@@ -1,12 +1,10 @@
 #Programming Assignment 2
 
-packet:
+Yap Zhihan 1004570
 
-0 - sending filename
+Pan Feng 100XXXX
 
-1 - sending file
 
-2 - sending authentication message
+**How to run**
 
-3 - requesting server certificate
-
+Compile the project, and make sure the working directory is this source directory (``your/own/directories/ProgrammingAssignment2/``). Place the files that you want to transfer in ``input-files``. Start the server, then the associated client (same authentication/confidentiality protocol). The client script will prompt the user to input the filename of the file in ``input-files``. Once sent, the output will be in ``received-files``.
