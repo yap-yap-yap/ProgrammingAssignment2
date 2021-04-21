@@ -110,6 +110,8 @@ public class ClientWithCP1 {
 					}
 					System.out.println("Sending file...");
 
+					long start_time = System.nanoTime();
+
 					// Send the filename
 					toServer.writeInt(0);
 					//System.out.println(input_filename);
@@ -154,6 +156,11 @@ public class ClientWithCP1 {
 
 					bufferedFileInputStream.close();
 					fileInputStream.close();
+
+					long end_time = fromServer.readLong();
+					System.out.println("Time elapsed for sending file: " + (end_time - start_time)/1000000.0 + "ms");
+
+
 					System.out.println("File sent.\n");
 
 

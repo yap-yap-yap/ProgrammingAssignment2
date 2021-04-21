@@ -121,6 +121,8 @@ public class ServerWithCP1 {
 						//System.out.println("times read: "+times_read);
 						times_read = 0;
 
+						toClient.writeLong(System.nanoTime());
+
 //						// there is trailing data for some reason. this clears the trailing data in the socket so it doesn't interfere with the next packet that the client sends.
 //						try{
 //							byte[] remaining_data = new byte[128];
